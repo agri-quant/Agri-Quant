@@ -6,19 +6,7 @@ from google import genai
 from google.genai import types
 
 # -----------------------------------------------------------------------------
-# 1. API INITIALIZATION & CONFIGURATION
-# -----------------------------------------------------------------------------
-api_key = os.getenv("GEMINI_API_KEY")
-client = None
-
-if api_key and api_key != "your_actual_api_key_here":
-    try:
-        client = genai.Client(api_key=api_key)
-    except Exception:
-        client = None
-
-# -----------------------------------------------------------------------------
-# 2. STREAMLIT UI SETUP
+# 1. UI SETUP & EXECUTIVE THEMING
 # -----------------------------------------------------------------------------
 st.set_page_config(
     page_title="Agri-Quant Elite | Geospatial AI Intelligence",
@@ -31,8 +19,8 @@ st.markdown("""
     .main-header { font-size:28px; color:#1a365d; font-weight:700; margin-bottom:5px; }
     .sub-header { font-size:16px; color:#4a5568; margin-bottom:20px; }
     .section-card { background-color:#f7fafc; padding:15px; border-left:4px solid #1a365d; border-radius:4px; margin-bottom:15px; }
-    .mode-badge { background-color:#ebf8ff; color:#2b6cb0; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:bold; }
-    .fallback-badge { background-color:#fffaf0; color:#dd6b20; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:bold; }
+    .mode-badge { background-color:#ebf8ff; color:#2b6cb0; padding:6px 12px; border-radius:4px; font-size:13px; font-weight:bold; display:inline-block; }
+    .fallback-badge { background-color:#fffaf0; color:#dd6b20; padding:6px 12px; border-radius:4px; font-size:13px; font-weight:bold; display:inline-block; }
     .geo-alert { background-color:#e6fffa; border-left:4px solid #319795; padding:10px; border-radius:4px; margin-bottom:15px; font-size:13px; color:#234e52; }
     </style>
 """, unsafe_allow_html=True)
@@ -40,12 +28,38 @@ st.markdown("""
 st.markdown('<div class="main-header">🌾 Agri-Quant Elite</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-header">Universal Dynamic AI Agribusiness Quantity Surveying & Spatial Planning Architecture</div>', unsafe_allow_html=True)
 
-# Status Badge Setup
+# -----------------------------------------------------------------------------
+# 2. API KEY ROUTING (Sidebar Credentials Entry)
+# -----------------------------------------------------------------------------
+st.sidebar.header("🔑 Authentication")
+
+# Try to look for background secret first
+bg_api_key = os.getenv("GEMINI_API_KEY")
+
+# Provide an on-screen fallback input field so you can paste it directly if the background fails
+user_api_key = st.sidebar.text_input(
+    "Enter Gemini API Key", 
+    value=bg_api_key if bg_api_key else "",
+    type="password",
+    help="Paste your AI Studio API key here to activate articulate AI models instantly."
+)
+
+# Set final key selector
+final_api_key = user_api_key if user_api_key else bg_api_key
+
+client = None
+if final_api_key:
+    try:
+        client = genai.Client(api_key=final_api_key)
+    except Exception:
+        client = None
+
+# Status Banner Display
 if client:
-    st.markdown('<span class="mode-badge">⚡ GEOSPATIAL COGNITIVE AI READY</span>', unsafe_allow_html=True)
+    st.markdown('<span class="mode-badge">⚡ LIVE COGNITIVE AI ACTIVE (FULL DETAILED ANALYSIS)</span>', unsafe_allow_html=True)
 else:
-    st.markdown('<span class="fallback-badge">📊 LOCAL QUANTITY SURVEYING BACKUP ENGINE ACTIVE</span>', unsafe_allow_html=True)
-st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown('<span class="fallback-badge">📊 LOCAL SIMULATION BACKUP ACTIVE (PASTE API KEY IN SIDEBAR FOR LIVE AI)</span>', unsafe_allow_html=True)
+st.markdown("<br><br>", unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
 # 3. GLOBAL INPUT PARAMETERS
@@ -64,25 +78,11 @@ coord_pattern = r"[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]
 is_coordinate = bool(re.match(coord_pattern, location_input.strip()))
 
 if is_coordinate:
-    st.markdown(f'<div class="geo-alert">🎯 **Geospatial Anchor Confirmed:** Coordinates `[{location_input.strip()}]` detected for a scope of **{land_size_input}**.</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="geo-alert">🎯 **Geospatial Anchor Confirmed:** Coordinates `[{location_input.strip()}]` mapped for a scope of **{land_size_input}**.</div>', unsafe_allow_html=True)
 else:
     st.markdown(f'<div class="geo-alert">📍 **Regional Mode Active:** Mapped to regional zone `{location_input}` for a scope of **{land_size_input}**.</div>', unsafe_allow_html=True)
 
 tab1, tab2, tab3 = st.tabs(["💰 Precise Costing (BOQ)", "📅 Lifecycle Planner", "📊 Comparative Matrix"])
-
-# Helper function to safely output local estimations if the API keys throw a 400 error
-def render_fallback_boq():
-    st.warning("🔄 AI API key validation pending on cloud servers. Displaying high-precision local calculation matrix.")
-    st.markdown(f"### Universal Precise BOQ for {crop_type}")
-    st.write(f"Calculated preliminary structural budget parameters for a project scale of **{land_size_input}** located at **{location_input}**.")
-    st.markdown(f"""
-    | Operational Component | Base Metric Allocation | Dynamic Allocation Scope | Target Precision Mode |
-    | :--- | :--- | :--- | :--- |
-    | **Site Bush Clearing** | Baseline Structural Rate | Scaled to: {land_size_input} | Coordinates Responsive |
-    | **Primary Mechanical Tillage** | Standard Plowing Run | Scaled to: {land_size_input} | Slope-Factor Optimized |
-    | **Secondary Harrowing Run** | Fine Aggregate Prep | Scaled to: {land_size_input} | Soil-Texture Adaptive |
-    | **Crop Bedding / Ridging** | {crop_type} Custom Spec | Scaled to: {land_size_input} | Structural Target Mapped |
-    """)
 
 # -----------------------------------------------------------------------------
 # FEATURE 1: LAND PREP COSTING (BOQ)
@@ -90,17 +90,27 @@ def render_fallback_boq():
 with tab1:
     st.markdown(f'<div class="section-card"><h3>Dynamic CapEx Estimator: {crop_type}</h3></div>', unsafe_allow_html=True)
     if st.button(f"Quantify {crop_type} Infrastructure", key="btn_tab1"):
-        with st.spinner(f"Accessing spatial indices..."):
+        with st.spinner(f"Processing calculations..."):
             if client:
                 try:
-                    f1_prompt = f"Expert Agricultural Quantity Surveyor BOQ Generator. Crop: {crop_type}, Scale: {land_size_input}, Location: {location_input}. Provide itemized land prep costs in Nigerian Naira (NGN) formatted as clear markdown headings and tables."
+                    f1_prompt = f"""
+                    You are an expert Agricultural Quantity Surveyor and Civil Engineer.
+                    Generate a highly articulate, institutional-grade Land Preparation Bill of Quantities (BOQ).
+                    
+                    PARAMETERS:
+                    - Crop Target: {crop_type}
+                    - Scale: {land_size_input}
+                    - Location: {location_input}
+                    
+                    OUTPUT STRUCTURE:
+                    Provide a highly detailed analysis containing an Executive Summary, an Itemized Cost Estimation Table in Nigerian Naira (NGN), Operational Logistics constraints, and professional recommendations. Make it thoroughly articulated and structured.
+                    """
                     response = client.models.generate_content(model='gemini-2.5-flash', contents=f1_prompt)
                     st.markdown(response.text)
                 except Exception as e:
-                    # Catch the API 400 error from screenshots cleanly without crashing the page layout
-                    render_fallback_boq()
+                    st.error(f"API Connection Exception: {e}. Please check your sidebar API Key string.")
             else:
-                render_fallback_boq()
+                st.warning("⚠️ Live AI Engine offline. Please provide a valid Gemini API Key in the sidebar input box to unlock full articulate calculations.")
 
 # -----------------------------------------------------------------------------
 # FEATURE 2: LIFECYCLE PLANNER
@@ -108,16 +118,16 @@ with tab1:
 with tab2:
     st.markdown(f'<div class="section-card"><h3>Automated Timeline for {crop_type}</h3></div>', unsafe_allow_html=True)
     if st.button(f"Generate {crop_type} Critical Path", key="btn_tab2"):
-        with st.spinner("Processing biological data..."):
+        with st.spinner("Processing biological milestones..."):
             if client:
                 try:
-                    f2_prompt = f"Provide a comprehensive month-by-month growth, weather risk, and supply chain timeline for cultivating {crop_type} starting on {planting_date} at location target {location_input} scaled to {land_size_input}."
+                    f2_prompt = f"Provide a deeply detailed, month-by-month growth, climate mitigation, and logistical supply chain timeline for cultivating {crop_type} starting on {planting_date} at location target {location_input} scaled to {land_size_input}."
                     response = client.models.generate_content(model='gemini-2.5-flash', contents=f2_prompt)
                     st.markdown(response.text)
                 except Exception as e:
-                    st.info(f"📊 Growth timeline initialized from {planting_date} for a field size of **{land_size_input}**. (AI cloud sync pending).")
+                    st.error(f"API Connection Exception: {e}")
             else:
-                st.info(f"📊 Growth timeline initialized from {planting_date} for a field size of **{land_size_input}**. Activate live AI credentials to process deep meteorological records.")
+                st.warning("⚠️ Live AI Engine offline. Please provide a valid Gemini API Key in the sidebar input box.")
 
 # -----------------------------------------------------------------------------
 # FEATURE 3: COMPARATIVE MATRIX
@@ -125,13 +135,13 @@ with tab2:
 with tab3:
     comparison_target = st.text_input("Enter Comparison Crop (Default: Millet)", value="Millet")
     if st.button(f"Compare {crop_type} vs {comparison_target}", key="btn_tab3"):
-        with st.spinner("Calculating investment variance..."):
+        with st.spinner("Executing complex financial variance comparative modeling..."):
             if client:
                 try:
-                    f3_prompt = f"As an Agricultural Investment Consultant, compare the ROI and OpEx of {crop_type} vs {comparison_target} for {land_size_input} mapped to {location_input}."
+                    f3_prompt = f"Act as an Agricultural Investment Consultant. Compare the granular ROI, upfront CapEx demands, and labor overhead parameters of {crop_type} vs {comparison_target} for a layout scale of {land_size_input} mapped to geographic zone {location_input}."
                     response = client.models.generate_content(model='gemini-2.5-flash', contents=f3_prompt)
                     st.markdown(response.text)
                 except Exception as e:
-                    st.warning("Comparative structural variance tables require live AI connection status clearance.")
+                    st.error(f"API Connection Exception: {e}")
             else:
-                st.warning("Comparative structural variance tables require live AI connection status clearance.")
+                st.warning("⚠️ Live AI Engine offline. Please provide a valid Gemini API Key in the sidebar input box.")
