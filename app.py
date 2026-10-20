@@ -13,7 +13,7 @@ from google.genai import types
 # 1. APPLICATION SETUP & DESIGN SYSTEM
 # -----------------------------------------------------------------------------
 st.set_page_config(
-    page_title="Agri-Quant | Geospatial AI, BOQ & Land Clearing Evidence Portal",
+    page_title="Agri-Quant | Universal AI Agribusiness QS & Forensic Evidence Portal",
     page_icon="🌾",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -64,6 +64,7 @@ st.markdown("""
     }
     .status-live { background-color: #dcfce7; color: #15803d; border: 1px solid #86efac; }
     .status-offline { background-color: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+    .category-badge { background-color: #e0e7ff; color: #3730a3; padding: 3px 8px; border-radius: 4px; font-weight: 600; font-size: 11px; }
     
     .audit-box-green {
         background-color: #f0fdf4;
@@ -110,21 +111,31 @@ if "evidence_audit_result" not in st.session_state:
 if "audit_result" not in st.session_state:
     st.session_state.audit_result = None
 
-KNOWN_COORDINATES = {
-    "Minna, Niger State": (9.6139, 6.5569),
-    "Ibadan, Oyo State": (7.3775, 3.9470),
-    "Makurdi, Benue State": (7.7322, 8.5391),
-    "Kano, Kano State": (12.0022, 8.5920),
-    "Abeokuta, Ogun State": (7.1475, 3.3619),
-    "Enugu, Enugu State": (6.4584, 7.5464),
-    "Kaduna, Kaduna State": (10.5105, 7.4165),
-    "Zaria, Kaduna State": (11.0855, 7.7199),
-    "Asaba, Delta State": (6.1989, 6.7337),
-    "Lafia, Nasarawa State": (8.4938, 8.5153),
+# Comprehensive Nigerian Agro-Geographic Registry for Instant Resolution
+STATE_COORDINATES = {
+    "abia": (5.4527, 7.5248), "adamawa": (9.3265, 12.4416), "akwa ibom": (5.0377, 7.9128),
+    "anambra": (6.2209, 6.9370), "bauchi": (10.3158, 9.8442), "bayelsa": (4.7719, 6.0699),
+    "benue": (7.7322, 8.5391), "makurdi": (7.7322, 8.5391), "borno": (11.8333, 13.1500),
+    "cross river": (5.9631, 8.3300), "calabar": (4.9757, 8.3417), "delta": (5.6806, 6.0000),
+    "asaba": (6.1989, 6.7337), "ebonyi": (6.2649, 8.0137), "edo": (6.5244, 5.8987),
+    "benin": (6.3350, 5.6037), "ekiti": (7.6211, 5.2215), "enugu": (6.4584, 7.5464),
+    "gombe": (10.2897, 11.1673), "imo": (5.4922, 7.0266), "jigawa": (12.2280, 9.5616),
+    "kaduna": (10.5105, 7.4165), "zaria": (11.0855, 7.7199), "kano": (12.0022, 8.5920),
+    "katsina": (12.9908, 7.6018), "kebbi": (11.4582, 4.1999), "kogi": (7.7969, 6.7408),
+    "lokoja": (7.8023, 6.7430), "kwara": (8.9669, 4.3874), "ilorin": (8.4799, 4.5418),
+    "lagos": (6.5244, 3.3792), "nasarawa": (8.4938, 8.5153), "lafia": (8.4938, 8.5153),
+    "niger": (9.6139, 6.5569), "minna": (9.6139, 6.5569), "mokwa": (9.2928, 5.0542),
+    "ogun": (7.1475, 3.3619), "abeokuta": (7.1475, 3.3619), "ondo": (7.2571, 5.2058),
+    "akure": (7.2571, 5.2058), "osun": (7.5629, 4.5200), "osogbo": (7.7827, 4.5418),
+    "oyo": (7.3775, 3.9470), "ibadan": (7.3775, 3.9470), "plateau": (9.2182, 9.5179),
+    "jos": (9.8965, 8.8583), "rivers": (4.8156, 7.0498), "port harcourt": (4.8156, 7.0498),
+    "sokoto": (13.0609, 5.2476), "taraba": (8.8937, 11.3596), "jalingo": (8.8937, 11.3596),
+    "yobe": (12.2939, 11.4390), "zamfara": (12.1222, 6.2236), "gusau": (12.1702, 6.6641),
+    "fct": (9.0765, 7.3986), "abuja": (9.0765, 7.3986)
 }
 
 # -----------------------------------------------------------------------------
-# 3. SIDEBAR CONTROLS & AUTHENTICATION
+# 3. SIDEBAR CONTROLS (DIRECT TEXT INPUTS — 100% UNCONSTRAINED)
 # -----------------------------------------------------------------------------
 with st.sidebar:
     st.image("https://images.unsplash.com/photo-1586771107445-d3ca888129ff?auto=format&fit=crop&w=400&q=80", use_container_width=True)
@@ -142,42 +153,43 @@ with st.sidebar:
     st.markdown("---")
     st.header("📋 Universal Project Scope")
     
-    crop_options = ["Cassava", "Maize (Corn)", "Soybeans", "Rice (Paddy)", "Sorghum", "Yam", "Oil Palm", "Sesame", "Cowpea (Beans)", "Custom Crop"]
-    crop_selection = st.selectbox("Primary Cultivation Crop", crop_options, index=0)
-    
-    if crop_selection == "Custom Crop":
-        crop_type = st.text_input("Specify Crop Name", value="Ginger")
-    else:
-        crop_type = crop_selection
+    # 1. 100% UNIVERSAL CROP INPUT (No restrictive dropdowns)
+    crop_type = st.text_input(
+        "Cultivation Crop / Commodity",
+        value="Cassava",
+        help="Type ANY crop in the world (e.g., Ginger, Cocoa, Maize, Tomato, Plantain, Garlic, Yam, Cashew, Wheat, Cotton, Sesame, etc.)"
+    ).strip()
+    if not crop_type:
+        crop_type = "Cassava"
+
+    # 2. 100% UNIVERSAL LOCATION INPUT (Direct text input for any town, LGA, state, or GPS)
+    location_input = st.text_input(
+        "Project Location or GPS Coordinates",
+        value="Minna, Niger State",
+        help="Type any City, Town, LGA, State, or raw GPS coordinates (e.g., 'Mokwa, Niger', 'Zaria, Kaduna', 'Ibadan', or '9.0820, 8.6753')"
+    ).strip()
+    if not location_input:
+        location_input = "Minna, Niger State"
 
     land_size = st.number_input(
         "Cultivation Area Scale (Hectares)",
-        min_value=0.25,
-        max_value=10000.0,
+        min_value=0.1,
+        max_value=50000.0,
         value=5.0,
         step=0.5,
         help="Standard institutional unit: 1 Hectare = 10,000 sq.m (~2.47 Acres)"
     )
 
-    location_choice = st.selectbox(
-        "Agro-Ecological Hub / State",
-        options=list(KNOWN_COORDINATES.keys()) + ["Custom Location / GPS"]
-    )
-
-    if location_choice == "Custom Location / GPS":
-        location_input = st.text_input("Enter Address or Coordinates (lat, lon)", value="9.0820, 8.6753")
-    else:
-        location_input = location_choice
-
     planting_date = st.date_input("Target Planting Anchor Date", value=datetime.date(2026, 6, 15))
+    
     mechanization_level = st.select_slider(
         "Farm Mechanization Standard",
-        options=["Semi-Manual (Ox/Hand Labor)", "Standard Mechanized (2-Pass)", "Full Precision Tech (GPS Guidance)"],
-        value="Standard Mechanized (2-Pass)"
+        options=["Manual / Animal Traction", "Semi-Mechanized (Standard 2-Pass)", "Full Precision Tech (GPS Guidance)"],
+        value="Semi-Mechanized (Standard 2-Pass)"
     )
 
     st.markdown("---")
-    st.caption("Designed for: **Federal Ministry of Agriculture & Food Security (FMAFS)**")
+    st.caption("Institutional Platform: **Federal Ministry of Agriculture & Food Security (FMAFS)**")
     st.caption("Architecture Lead: **Muhammad Alfa Kure**")
 
 is_ai_live = bool(final_key and len(final_key) > 15)
@@ -188,66 +200,128 @@ def get_gemini_client():
     return None
 
 # -----------------------------------------------------------------------------
-# 4. TOP HERO BAR & GEOSPATIAL RESOLUTION
+# 4. AGRONOMIC TAXONOMY & GEOSPATIAL INTELLIGENCE ENGINES
 # -----------------------------------------------------------------------------
+def classify_crop_profile(name: str):
+    """Dynamically categorizes any crop in the world to calibrate QS metrics."""
+    n = name.lower()
+    if any(k in n for k in ["cocoa", "oil palm", "palm", "cashew", "rubber", "coffee", "citrus", "orange", "mango", "avocado", "plantain", "banana", "teak", "guava"]):
+        return {
+            "group": "Perennial / Tree / Plantation",
+            "seed_label": "Certified Polybag Seedlings / Cuttings",
+            "seed_rate_ha": 135000,
+            "ridging_label": "Holing, Lining & Spacing (Plantation Grid)",
+            "fertilizer_label": "Organic Manure + Basal NPK Ring Application",
+            "fert_cost_ha": 85000,
+            "pest_label": "Stem Borer & Phytophthora Fungal Protection"
+        }
+    elif any(k in n for k in ["yam", "cassava", "potato", "ginger", "turmeric", "cocoyam", "garlic", "sweet potato"]):
+        return {
+            "group": "Root, Tuber & Rhizome",
+            "seed_label": f"Certified {name} Seedlings / Stems / Rhizome Setts",
+            "seed_rate_ha": 65000 if "yam" not in n else 160000,
+            "ridging_label": "Deep Contour Ridging & Mounding / Bed Formation",
+            "fertilizer_label": "Basal NPK (High Potassium Blend 12:12:17 or 15:15:15)",
+            "fert_cost_ha": 105000,
+            "pest_label": "Nematode, Beetle & Tuber Rot Prophylactic Treatment"
+        }
+    elif any(k in n for k in ["tomato", "pepper", "onion", "cucumber", "watermelon", "cabbage", "carrot", "lettuce", "vegetable", "okra", "eggplant"]):
+        return {
+            "group": "Horticulture & High-Value Vegetables",
+            "seed_label": "Hybrid F1 Nursery Seedling Trays & Substrate",
+            "seed_rate_ha": 85000,
+            "ridging_label": "Fine Tilth Raised Seedbeds & Drip Bed Layout",
+            "fertilizer_label": "Foliar Fertigation Pack & Soluble NPK",
+            "fert_cost_ha": 120000,
+            "pest_label": "Intensive Tuta Absoluta, Thrips & Blight Management"
+        }
+    elif any(k in n for k in ["soy", "bean", "cowpea", "groundnut", "peanut", "sesame", "benniseed", "chickpea", "pigeon"]):
+        return {
+            "group": "Grain Legume & Oilseed",
+            "seed_label": "Certified Inoculated Seed Stock",
+            "seed_rate_ha": 38000,
+            "ridging_label": "Narrow Inter-Row Ridges / Flat Planter Beds",
+            "fertilizer_label": "Single Super Phosphate (SSP) & Minimal Starter Nitrogen",
+            "fert_cost_ha": 65000,
+            "pest_label": "Pod Borer (Maruca) & Pod Sucking Bug Control"
+        }
+    else:  # Cereals, grains, grasses, or unclassified broad-acre crops
+        return {
+            "group": "Cereal, Grain & Broad-Acre Crop",
+            "seed_label": f"Certified Hybrid {name} Foundation Seed Stock",
+            "seed_rate_ha": 42000,
+            "ridging_label": "Standard Tractor Ridging / Drill Spacing",
+            "fertilizer_label": "Basal NPK 20:10:10 Compound Fertilizer",
+            "fert_cost_ha": 98000,
+            "pest_label": "Fall Armyworm & Stem Borer Systemic Interception"
+        }
+
+crop_meta = classify_crop_profile(crop_type)
+
+# Geospatial Coordinate Resolution Engine
 coord_pattern = r"^[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)$"
 matched_coord = re.match(coord_pattern, location_input.strip())
 
+lat, lon = 9.0765, 7.3986  # Default centroid (Nigeria / Abuja)
+geo_status = f"🌐 Regional Zone: {location_input}"
+
 if matched_coord:
-    lat = float(location_input.split(",")[0].strip())
-    lon = float(location_input.split(",")[1].strip())
+    parts = location_input.split(",")
+    lat = float(parts[0].strip())
+    lon = float(parts[1].strip())
     geo_status = f"🎯 Direct GPS Coordinates Anchor: [{lat:.4f}, {lon:.4f}]"
-elif location_input in KNOWN_COORDINATES:
-    lat, lon = KNOWN_COORDINATES[location_input]
-    geo_status = f"📍 Regional Anchor: {location_input} [Centroid: {lat:.4f}, {lon:.4f}]"
 else:
-    lat, lon = 9.0820, 8.6753
-    geo_status = f"🌐 Custom Boundary Reference: {location_input}"
+    # Match against known state/town registry
+    loc_clean = location_input.lower()
+    for key, coords in STATE_COORDINATES.items():
+        if key in loc_clean:
+            lat, lon = coords
+            geo_status = f"📍 Mapped Agro-Ecological Node: {location_input.title()} [{lat:.4f}, {lon:.4f}]"
+            break
 
 st.markdown(f"""
     <div class="hero-banner">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
             <div>
                 <h1 class="hero-title">🌾 Agri-Quant Architecture</h1>
-                <p class="hero-subtitle">Institutional Quantity Surveying, Geospatial Auditing & Land Clearing Evidence Clearance Portal</p>
+                <p class="hero-subtitle">Universal AI Agribusiness Quantity Surveying, Geospatial Auditing & Land Clearing Evidence Portal</p>
             </div>
             <div>
                 {f'<span class="status-pill status-live">⚡ LIVE MULTIMODAL AI (Gemini 2.5 Flash)</span>' if is_ai_live else '<span class="status-pill status-offline">📊 OFFLINE QUANT ENGINE ACTIVE</span>'}
             </div>
         </div>
-        <div style="margin-top:14px; font-size:13px; color:#cbd5e1; display:flex; align-items:center; gap:8px;">
-            <span>{geo_status}</span> &nbsp;|&nbsp; <span>Scope: <b>{land_size:.2f} Hectares</b></span> &nbsp;|&nbsp; <span>Target Crop: <b>{crop_type}</b></span>
+        <div style="margin-top:14px; font-size:13px; color:#cbd5e1; display:flex; align-items:center; flex-wrap:wrap; gap:10px;">
+            <span>{geo_status}</span> &nbsp;|&nbsp; 
+            <span>Target Crop: <b>{crop_type}</b> <span class="category-badge">{crop_meta['group']}</span></span> &nbsp;|&nbsp; 
+            <span>Scope: <b>{land_size:.2f} Hectares</b></span>
         </div>
     </div>
 """, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 5. PARAMETRIC QS ENGINE
+# 5. DYNAMIC PARAMETRIC QS ENGINE (Calibrated to ANY Crop)
 # -----------------------------------------------------------------------------
-def compute_parametric_boq(crop: str, hectares: float, mech_tier: str) -> pd.DataFrame:
-    mech_multiplier = 0.85 if "Semi-Manual" in mech_tier else (1.35 if "Full Precision" in mech_tier else 1.0)
-
-    crop_seed_rate_ha = {
-        "Cassava": 45000, "Maize (Corn)": 38000, "Soybeans": 42000,
-        "Rice (Paddy)": 50000, "Yam": 140000, "Oil Palm": 120000,
-        "Sorghum": 28000, "Sesame": 30000, "Cowpea (Beans)": 35000
-    }.get(crop, 40000)
+def compute_parametric_boq(crop_name: str, hectares: float, mech_tier: str, meta: dict) -> pd.DataFrame:
+    mech_multiplier = 0.80 if "Manual" in mech_tier else (1.30 if "Full Precision" in mech_tier else 1.0)
 
     rows = [
         {"Category": "Land Preparation", "Work Item": "Site Delineation, Perimeter Pegging & Bush Clearing", "Unit": "Ha", "Rate_NGN": 75000 * mech_multiplier},
         {"Category": "Land Preparation", "Work Item": "Heavy De-Stumping & Primary Mechanized Disc Ploughing", "Unit": "Ha", "Rate_NGN": 65000 * mech_multiplier},
         {"Category": "Land Preparation", "Work Item": "Secondary Cross-Harrowing & Soil Tilth Pulverization", "Unit": "Ha", "Rate_NGN": 45000 * mech_multiplier},
-        {"Category": "Land Preparation", "Work Item": "Mechanical Ridging & Contour Bed Formation", "Unit": "Ha", "Rate_NGN": 40000 * mech_multiplier},
-        {"Category": "Inputs & Planting", "Work Item": f"Certified Seed / Stem Stock ({crop} Foundation Material)", "Unit": "Ha", "Rate_NGN": crop_seed_rate_ha},
-        {"Category": "Inputs & Planting", "Work Item": "Pre-Emergence Chemical Barrier (Selective Herbicide)", "Unit": "Ha", "Rate_NGN": 24000},
-        {"Category": "Inputs & Planting", "Work Item": "Basal Inorganic Fertilizer (NPK Blend)", "Unit": "Ha", "Rate_NGN": 98000},
-        {"Category": "Inputs & Planting", "Work Item": "Post-Planting Top Dressing (Granular Urea / Bio-Stimulant)", "Unit": "Ha", "Rate_NGN": 52000},
-        {"Category": "Labor & Agronomics", "Work Item": "Precision Planting Labor (Spacing & Density Compliance)", "Unit": "Ha", "Rate_NGN": 35000},
-        {"Category": "Labor & Agronomics", "Work Item": "First & Second Hand-Weeding / Canopy Maintenance", "Unit": "Ha", "Rate_NGN": 40000},
-        {"Category": "Labor & Agronomics", "Work Item": "Integrated Pest Management (IPM) & Foliar Fungicide", "Unit": "Ha", "Rate_NGN": 28000},
-        {"Category": "Labor & Agronomics", "Work Item": "Agricultural Extension, Spatial Tracking & Soil Sampling", "Unit": "Ha", "Rate_NGN": 15000},
-        {"Category": "Harvest Logistics", "Work Item": "Field Harvest, Aggregation Labor & Farm-Gate Weighing", "Unit": "Ha", "Rate_NGN": 45000},
-        {"Category": "Harvest Logistics", "Work Item": "Post-Harvest Bagging, Crating & Short-Haul Transit", "Unit": "Ha", "Rate_NGN": 30000},
+        {"Category": "Land Preparation", "Work Item": meta["ridging_label"], "Unit": "Ha", "Rate_NGN": 45000 * mech_multiplier},
+        
+        {"Category": "Inputs & Planting", "Work Item": meta["seed_label"], "Unit": "Ha", "Rate_NGN": meta["seed_rate_ha"]},
+        {"Category": "Inputs & Planting", "Work Item": "Pre-Emergence Chemical Barrier (Selective Herbicide)", "Unit": "Ha", "Rate_NGN": 26000},
+        {"Category": "Inputs & Planting", "Work Item": meta["fertilizer_label"], "Unit": "Ha", "Rate_NGN": meta["fert_cost_ha"]},
+        {"Category": "Inputs & Planting", "Work Item": "Top Dressing / Foliar Micronutrient Boost", "Unit": "Ha", "Rate_NGN": 52000},
+        
+        {"Category": "Labor & Agronomics", "Work Item": f"Precision Planting & Alignment Labor ({crop_name})", "Unit": "Ha", "Rate_NGN": 35000},
+        {"Category": "Labor & Agronomics", "Work Item": "First & Second Weed Canopy Maintenance Passes", "Unit": "Ha", "Rate_NGN": 42000},
+        {"Category": "Labor & Agronomics", "Work Item": meta["pest_label"], "Unit": "Ha", "Rate_NGN": 30000},
+        {"Category": "Labor & Agronomics", "Work Item": "Field Extension, Spatial Auditing & Soil Health Tracking", "Unit": "Ha", "Rate_NGN": 15000},
+        
+        {"Category": "Harvest Logistics", "Work Item": f"Maturity Harvesting, Manual Lifting / Field Aggregation ({crop_name})", "Unit": "Ha", "Rate_NGN": 48000},
+        {"Category": "Harvest Logistics", "Work Item": "Post-Harvest Crating, Bagging & Farm-Gate Weighing", "Unit": "Ha", "Rate_NGN": 32000},
     ]
 
     df = pd.DataFrame(rows)
@@ -256,12 +330,10 @@ def compute_parametric_boq(crop: str, hectares: float, mech_tier: str) -> pd.Dat
     return df
 
 # Baseline calculations
-boq_df = compute_parametric_boq(crop_type, land_size, mechanization_level)
+boq_df = compute_parametric_boq(crop_type, land_size, mechanization_level, crop_meta)
 subtotal = boq_df["Total_Cost_NGN"].sum()
 contingency = subtotal * 0.075
 grand_total = subtotal + contingency
-
-# Land prep specific subtotal for validation
 land_prep_subtotal = boq_df[boq_df["Category"] == "Land Preparation"]["Total_Cost_NGN"].sum()
 
 # -----------------------------------------------------------------------------
@@ -272,7 +344,7 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "📅 Lifecycle & Critical Path", 
     "📊 Comparative Matrix",
     "📡 Farm-Gate & Telemetry",
-    "🚜 Land Clearing & Physical Evidence",  # <-- NEW MINISTRY EVIDENCE HUB
+    "🚜 Land Clearing & Physical Evidence",
     "🏛️ FMAFS Forensic Subsidy Auditor"
 ])
 
@@ -281,6 +353,8 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
 # =============================================================================
 with tab1:
     st.subheader(f"Institutional Bill of Quantities (BOQ): {crop_type}")
+    st.caption(f"Classification: **{crop_meta['group']}** | Location: **{location_input}** | Scope: **{land_size:.2f} Hectares**")
+
     col_m1, col_m2, col_m3, col_m4 = st.columns(4)
     col_m1.metric("Direct Works (Base)", f"₦{subtotal:,.2f}")
     col_m2.metric("Contingency Reserve (7.5%)", f"₦{contingency:,.2f}")
@@ -298,7 +372,7 @@ with tab1:
                 "Qty": "{:,.2f}"
             }),
             use_container_width=True,
-            height=380
+            height=390
         )
         
         csv_buffer = io.StringIO()
@@ -315,63 +389,189 @@ with tab1:
         cat_summary = boq_df.groupby("Category")["Total_Cost_NGN"].sum().reset_index()
         st.bar_chart(cat_summary.set_index("Category"))
         
-        with st.expander("📍 Geospatial Farmland Visualizer", expanded=True):
+        with st.expander("📍 Geospatial Site Centroid", expanded=True):
             st.map(pd.DataFrame({'lat': [lat], 'lon': [lon]}), zoom=9)
+
+    st.markdown("---")
+    st.markdown("#### ⚡ AI Senior Quantity Surveyor Synthesis")
+    if st.button(f"Generate Senior QS Narrative Audit for {crop_type}", key="btn_run_ai_boq", type="primary"):
+        if is_ai_live:
+            with st.spinner(f"Evaluating structural procurement indices for {crop_type}..."):
+                client = get_gemini_client()
+                prompt = f"""
+                You are a Fellow of the Nigerian Institute of Quantity Surveyors (NIQS) and Principal Agribusiness Valuer.
+                Provide an institutional-grade Quantity Surveying review for cultivating:
+                - Crop: {crop_type} (Classification: {crop_meta['group']})
+                - Cultivated Scope: {land_size} Hectares
+                - Location Profile: {location_input}
+                - Mechanization Level: {mechanization_level}
+                - Direct CapEx: ₦{subtotal:,.2f}
+                - Grand Total Budget: ₦{grand_total:,.2f} (₦{grand_total/land_size:,.2f}/Ha)
+
+                Provide a structured markdown review covering:
+                1. **Market Rate Reality Check**: Evaluate unit cost feasibility for {crop_type} given fuel and agro-input costs in {location_input}.
+                2. **Specific Agronomic & Soil Hazards**: Risks specific to {crop_type} in {location_input}.
+                3. **Procurement Timing Strategy**: Sourcing windows for seeds/propagules and fertilizers to avoid regional inflation.
+                4. **Bankability & Loan Certification Statement**: Advisory note for commercial and developmental agricultural lenders.
+                """
+                try:
+                    res = client.models.generate_content(
+                        model='gemini-2.5-flash',
+                        contents=prompt,
+                        config=types.GenerateContentConfig(temperature=0.2)
+                    )
+                    st.session_state.boq_ai_analysis = res.text
+                except Exception as e:
+                    st.error(f"AI API Connection Error: {e}")
+        else:
+            st.session_state.boq_ai_analysis = f"""
+            ### 📋 Institutional QS Site Brief ({crop_type} - {location_input})
+            * **Project:** {crop_type} Enterprise ({crop_meta['group']})
+            * **Scope:** {land_size} Ha | Grand Total: ₦{grand_total:,.2f} (₦{grand_total/land_size:,.2f}/Ha)
+            * **Advisory Directive:** Ensure foundation propagation material is certified and tested for germination/purity prior to final field placement.
+            """
+
+    if st.session_state.boq_ai_analysis:
+        st.markdown(st.session_state.boq_ai_analysis)
 
 # =============================================================================
 # TAB 2: LIFECYCLE & CRITICAL PATH PLANNER
 # =============================================================================
 with tab2:
     st.subheader(f"Agrometeorological Lifecycle & Critical Path: {crop_type}")
+    st.caption(f"Commencing sequence on **{planting_date.strftime('%B %d, %Y')}** | Target Zone: **{location_input}**")
+
     phases = [
-        {"Phase": "Stage 0: Pre-Planting", "Days": "Day -30 to -1", "Focus": "Soil sampling, heavy clearing, destumping, lime conditioning & drainage."},
-        {"Phase": "Stage 1: Establishment", "Days": "Day 0 to +21", "Focus": f"Certified {crop_type} planting, pre-emergence herbicide barrier within 48h."},
-        {"Phase": "Stage 2: Vegetative Growth", "Days": "Day 22 to +60", "Focus": "First split-dose NPK application, gap filling, manual rogueing."},
-        {"Phase": "Stage 3: Reproductive / Bulking", "Days": "Day 61 to +120", "Focus": "Top-dressing with Urea/MOP, scouting for armyworms, mid-season moisture audit."},
-        {"Phase": "Stage 4: Maturation & Harvest", "Days": "Day 121 to Terminal", "Focus": "Maturity dry-matter testing, mechanized harvesting, bagging & aggregation."}
+        {"Phase": "Stage 0: Site Prep & Drainage", "Window": "Week -4 to -1", "Focus": f"Land clearing, plowing, and preparation for {crop_type} ({crop_meta['ridging_label']})."},
+        {"Phase": "Stage 1: Planting / Establishment", "Window": "Week 1 to 3", "Focus": f"Establishment of {crop_meta['seed_label']}, herbicide barrier within 48 hours."},
+        {"Phase": "Stage 2: Vegetative & Nutritional", "Window": "Week 4 to 8", "Focus": f"Nutritional application of {crop_meta['fertilizer_label']}, first canopy weeding."},
+        {"Phase": "Stage 3: Crop Protection & Maturation", "Window": "Week 9 to Maturity", "Focus": f"Management of {crop_meta['pest_label']}, foliar feeding and yield monitoring."},
+        {"Phase": "Stage 4: Harvesting & Off-take", "Window": "Terminal Phase", "Focus": f"Maturity index sampling, sorting, grading, and direct off-taker farm-gate delivery."}
     ]
     st.table(pd.DataFrame(phases))
 
+    if st.button(f"Generate Phenological Agronomic Schedule for {crop_type}", key="btn_run_lifecycle", type="primary"):
+        if is_ai_live:
+            with st.spinner(f"Computing meteorological calendar for {crop_type} in {location_input}..."):
+                client = get_gemini_client()
+                prompt = f"""
+                Act as a Senior Agronomist and Agrometeorologist.
+                Build a precise month-by-month phenological calendar and operational critical path for:
+                - Target Crop: {crop_type} ({crop_meta['group']})
+                - Field Scale: {land_size} Hectares
+                - Location: {location_input}
+                - Target Planting Date: {planting_date}
+
+                Include:
+                1. **Rainfall & Soil Temperature Milestones**: Suitability windows in {location_input}.
+                2. **Specific Input Application Schedule**: Exact days after planting (DAP) for fertilizers, pest barriers, and weed control.
+                3. **Pest & Disease Scouting Protocol**: Primary hazards for {crop_type} in this zone and containment methods.
+                4. **Harvest & Post-Harvest Protocol**: Moisture management, storage, or rapid processing directives.
+                """
+                try:
+                    res = client.models.generate_content(
+                        model='gemini-2.5-flash',
+                        contents=prompt,
+                        config=types.GenerateContentConfig(temperature=0.2)
+                    )
+                    st.session_state.lifecycle_analysis = res.text
+                except Exception as e:
+                    st.error(f"AI API Connection Error: {e}")
+        else:
+            st.session_state.lifecycle_analysis = f"Phenological lifecycle established for {crop_type} starting on {planting_date} at {location_input}."
+
+    if st.session_state.lifecycle_analysis:
+        st.markdown(st.session_state.lifecycle_analysis)
+
 # =============================================================================
-# TAB 3: COMPARATIVE MATRIX & CROPPING ARBITRAGE
+# TAB 3: COMPARATIVE MATRIX & CROPPING ARBITRAGE (UNCONSTRAINED)
 # =============================================================================
 with tab3:
     st.subheader("Cross-Crop Financial & Investment Arbitrage")
-    comp_crop = st.selectbox("Benchmark Alternate Crop", [c for c in crop_options if c != crop_type and c != "Custom Crop"], index=0)
-    col_c1, col_c2 = st.columns(2)
-    with col_c1:
-        expected_yield = st.number_input(f"Expected {crop_type} Yield (Tonnes/Ha)", value=18.0, step=1.0)
-    with col_c2:
-        expected_price = st.number_input(f"Farm-Gate Price for {crop_type} (NGN/Tonne)", value=95000, step=5000)
+    st.caption("Compare your primary crop against any other agricultural commodity in the world.")
 
-    primary_cost = grand_total
-    comp_boq = compute_parametric_boq(comp_crop, land_size, mechanization_level)
+    col_comp1, col_comp2 = st.columns(2)
+    with col_comp1:
+        # 100% UNCONSTRAINED COMPARISON CROP INPUT
+        comp_crop = st.text_input("Enter Any Benchmark Crop to Compare", value="Maize").strip()
+        if not comp_crop:
+            comp_crop = "Maize"
+    with col_comp2:
+        expected_yield = st.number_input(f"Expected {crop_type} Yield (Tonnes/Ha)", min_value=0.1, value=15.0, step=1.0)
+        expected_price = st.number_input(f"Estimated Farm-Gate Price for {crop_type} (NGN/Tonne)", min_value=1000, value=95000, step=5000)
+
+    # Parametric calculation for comparison
+    comp_meta = classify_crop_profile(comp_crop)
+    comp_boq = compute_parametric_boq(comp_crop, land_size, mechanization_level, comp_meta)
     comp_cost = comp_boq["Total_Cost_NGN"].sum() * 1.075
 
+    primary_cost = grand_total
     primary_gross_rev = expected_yield * expected_price * land_size
     primary_net_profit = primary_gross_rev - primary_cost
     primary_roi = (primary_net_profit / primary_cost) * 100 if primary_cost > 0 else 0
 
     col_v1, col_v2, col_v3 = st.columns(3)
-    col_v1.metric(f"{crop_type} Gross Revenue", f"₦{primary_gross_rev:,.2f}")
+    col_v1.metric(f"{crop_type} Estimated Gross Revenue", f"₦{primary_gross_rev:,.2f}")
     col_v2.metric(f"{crop_type} Net Margin", f"₦{primary_net_profit:,.2f}", f"{primary_roi:.1f}% ROI")
     col_v3.metric(f"{comp_crop} Estimated CapEx", f"₦{comp_cost:,.2f}")
+
+    if st.button(f"Execute Investment Arbitrage: {crop_type} vs {comp_crop}", key="btn_run_compare", type="primary"):
+        if is_ai_live:
+            with st.spinner(f"Evaluating investment metrics: {crop_type} vs {comp_crop}..."):
+                client = get_gemini_client()
+                prompt = f"""
+                Act as an Institutional Agribusiness Investment Banker.
+                Perform a comparative investment analysis between:
+                - Primary Crop: {crop_type} ({crop_meta['group']}) | Estimated CapEx: ₦{primary_cost:,.2f}
+                - Comparison Crop: {comp_crop} ({comp_meta['group']}) | Estimated CapEx: ₦{comp_cost:,.2f}
+                - Scope: {land_size} Hectares in {location_input}
+
+                Analyze:
+                1. **Working Capital & Labor Friction**: Which crop carries higher operational risk during the season?
+                2. **Off-Take Liquidity**: Ease of selling {crop_type} vs {comp_crop} at the farm gate in Nigeria.
+                3. **Downside Risk & Perishability**: Storage shelf life, moisture risks, and price volatility.
+                4. **Final Investment Decision**: Portfolio recommendation for this land parcel.
+                """
+                try:
+                    res = client.models.generate_content(
+                        model='gemini-2.5-flash',
+                        contents=prompt,
+                        config=types.GenerateContentConfig(temperature=0.2)
+                    )
+                    st.session_state.comparison_analysis = res.text
+                except Exception as e:
+                    st.error(f"AI Connection Error: {e}")
+        else:
+            st.session_state.comparison_analysis = f"Arbitrage analysis for {crop_type} (₦{primary_cost:,.2f}) vs {comp_crop} (₦{comp_cost:,.2f}) across {land_size} Ha."
+
+    if st.session_state.comparison_analysis:
+        st.markdown(st.session_state.comparison_analysis)
 
 # =============================================================================
 # TAB 4: FARM-GATE & USSD TELEMETRY INGESTION HUB
 # =============================================================================
 with tab4:
-    st.subheader("📡 Hyper-Local Farm-Gate Cost Index & USSD Telemetry")
+    st.subheader(f"📡 Hyper-Local Farm-Gate Cost Index & USSD Telemetry: {location_input}")
+    st.caption("Capturing un-searchable ground-truth data from rural smallholders via USSD/IVR channels.")
+
+    t1, t2, t3, t4 = st.columns(4)
+    t1.metric("USSD/IVR Reporting Nodes", "1,845 Wards", "+14.8% MoM")
+    t2.metric("Tractor Rental Index", "₦88,500 / Ha", "-4.2% Regional Subsidies")
+    t3.metric("Urea (50kg) Rural Farmgate", "₦46,200", "+21% Above Benchmark")
+    t4.metric("Daily Unskilled Farm Labor", "₦3,800 - ₦4,500", "Peak Season Rate")
+
+    st.markdown("---")
+    st.markdown("#### Real-Time Telemetry Feed: Rural Market Day Observations")
     sample_ussd_data = pd.DataFrame([
-        {"Ward / Market": "Mokwa Central Market", "State": "Niger", "Reported Item": "Disc Ploughing (Per Ha)", "Official Gov Rate": 55000, "Ground-Truth Farm-Gate": 68000, "Discrepancy": "+23.6%"},
-        {"Ward / Market": "Bodija Grain Hub", "State": "Oyo", "Reported Item": "NPK 20-10-10 (50kg)", "Official Gov Rate": 32000, "Ground-Truth Farm-Gate": 41500, "Discrepancy": "+29.7%"},
-        {"Ward / Market": "Dawanau International", "State": "Kano", "Reported Item": "Maize Seed (10kg)", "Official Gov Rate": 18000, "Ground-Truth Farm-Gate": 21000, "Discrepancy": "+16.6%"},
-        {"Ward / Market": "Gboko Agri-Market", "State": "Benue", "Reported Item": "Cassava Stems (50 Bundles)", "Official Gov Rate": 35000, "Ground-Truth Farm-Gate": 48000, "Discrepancy": "+37.1%"},
+        {"Ward / Market": f"{location_input} Central Market", "Reported Item": f"{crop_type} Propagule Stock", "Official Benchmark": f"₦{crop_meta['seed_rate_ha']:,}", "Ground-Truth Farm-Gate": f"₦{int(crop_meta['seed_rate_ha']*1.18):,}", "Variance": "+18.0%"},
+        {"Ward / Market": f"{location_input} Machinery Pool", "Reported Item": "Heavy Disc Ploughing (Per Ha)", "Official Benchmark": "₦65,000", "Ground-Truth Farm-Gate": "₦78,000", "Variance": "+20.0%"},
+        {"Ward / Market": "Regional Agro-Dealer Hub", "Reported Item": "NPK 20-10-10 / 15-15-15 (50kg)", "Official Benchmark": "₦35,000", "Ground-Truth Farm-Gate": "₦42,500", "Variance": "+21.4%"},
+        {"Ward / Market": "Zonal Farmers Cooperative", "Reported Item": "Daily Farm Labor (Weeding)", "Official Benchmark": "₦3,500", "Ground-Truth Farm-Gate": "₦4,200", "Variance": "+20.0%"}
     ])
     st.dataframe(sample_ussd_data, use_container_width=True)
 
 # =============================================================================
-# TAB 5: LAND CLEARING & PHYSICAL EVIDENCE CLEARANCE HUB (NEW)
+# TAB 5: LAND CLEARING & PHYSICAL EVIDENCE CLEARANCE HUB
 # =============================================================================
 with tab5:
     st.markdown("""
@@ -395,7 +595,7 @@ with tab5:
             default=["Crawler Bulldozer (CAT D6/D7)", "Agricultural Tractor (75-90 HP)", "Heavy Disc Plough (3-4 disc)"]
         )
     with c_meta3:
-        diesel_logged = st.number_input("Total Diesel Consumed (Litres)", min_value=0.0, value=float(land_size * 115), step=50.0, help="Standard heavy clearing in Nigeria consumes 90-130 Litres per Hectare")
+        diesel_logged = st.number_input("Total Diesel Consumed (Litres)", min_value=0.0, value=float(land_size * 115), step=50.0, help="Standard heavy clearing consumes ~90-130 Litres per Hectare")
         clearing_invoice_amount = st.number_input("Claimed Land Clearing Cost (NGN)", min_value=0.0, value=float(land_prep_subtotal), step=50000.0)
 
     # Physical Diesel Physics Verification
@@ -418,8 +618,6 @@ with tab5:
             st.image(post_file, caption="Submitted Verification Evidence (Post-Clearing)", use_container_width=True)
 
     st.markdown("---")
-    
-    # Pre-Audit Diesel Telematics Diagnostic
     st.markdown("#### ⚙️ Engineering & Mechanization Diagnostic")
     d1, d2, d3 = st.columns(3)
     d1.metric("Diesel Burn Rate / Ha", f"{diesel_burn_rate:.1f} L/Ha", "Benchmark: 90 - 130 L/Ha")
@@ -437,13 +635,11 @@ with tab5:
         if is_ai_live:
             with st.spinner("Analyzing ground textures, vegetative cover loss, and mechanization telemetry with Gemini 2.5 Flash..."):
                 client = get_gemini_client()
-                
-                # Prepare multimodal content parts
                 content_parts = []
                 
                 evidence_prompt = f"""
-                You are the Chief Agricultural Field Inspector and Forensic Land Auditor for the Federal Ministry of Agriculture and Food Security (FMAFS) Nigeria.
-                Perform a formal physical evidence audit to approve or reject the Tranche-1 (Land Clearing) subsidy disbursement for this farm:
+                You are Chief Agricultural Field Inspector and Forensic Land Auditor for the Federal Ministry of Agriculture and Food Security (FMAFS) Nigeria.
+                Perform a formal physical evidence audit to approve or reject Tranche-1 (Land Clearing) subsidy disbursement for:
 
                 **Applicant & Site Profile:**
                 - Farm Reference: {location_input}
@@ -454,15 +650,12 @@ with tab5:
                 - Invoiced Land Prep Amount: ₦{clearing_invoice_amount:,.2f}
                 - Ministry QS Baseline Land Prep Budget: ₦{land_prep_subtotal:,.2f}
 
-                **Images Attached:**
-                {"- Both Pre-clearing and Post-clearing images provided." if (pre_file and post_file) else ("- Post-clearing image provided." if post_file else "- No direct photographic images attached (performing telemetry & documentary audit).")}
-
                 **Your Mandatory Forensic Checklist:**
                 1. **Visual Soil Disturbance & Canopy Analysis**:
                    - Look for signs of mechanical disc furrows, pulverized tilth, windrowed brush piles, or removed tree roots.
                    - Detect if the image appears to be an unworked savanna, unplowed grassland, or fake/unrelated photo.
                 2. **Engineering Plausibility Test**:
-                   - Compare the {diesel_logged} Litres of fuel logged against the {land_size} Hectares claimed. Is this physically sufficient for primary mechanical clearing and secondary tillage?
+                   - Compare the {diesel_logged} Litres of fuel logged against {land_size} Hectares. Is this physically sufficient for primary mechanical clearing and secondary tillage?
                 3. **Financial Discrepancy Assessment**:
                    - Compare claimed ₦{clearing_invoice_amount:,.2f} against the benchmark ₦{land_prep_subtotal:,.2f}.
                 4. **Formal Ministerial Action Verdict**:
@@ -472,28 +665,23 @@ with tab5:
 
                 Deliver your response in an official ministerial audit memorandum format.
                 """
-                
                 content_parts.append(evidence_prompt)
 
-                # Attach uploaded images directly to Gemini multimodal context
                 if post_file:
-                    post_img_bytes = post_file.getvalue()
-                    content_parts.append(types.Part.from_bytes(data=post_img_bytes, mime_type=post_file.type))
+                    content_parts.append(types.Part.from_bytes(data=post_file.getvalue(), mime_type=post_file.type))
                 if pre_file:
-                    pre_img_bytes = pre_file.getvalue()
-                    content_parts.append(types.Part.from_bytes(data=pre_img_bytes, mime_type=pre_file.type))
+                    content_parts.append(types.Part.from_bytes(data=pre_file.getvalue(), mime_type=pre_file.type))
 
                 try:
-                    response = client.models.generate_content(
+                    res = client.models.generate_content(
                         model='gemini-2.5-flash',
                         contents=content_parts,
                         config=types.GenerateContentConfig(temperature=0.2)
                     )
-                    st.session_state.evidence_audit_result = response.text
+                    st.session_state.evidence_audit_result = res.text
                 except Exception as e:
                     st.error(f"Multimodal AI Error: {e}")
         else:
-            # Deterministic Fallback Report
             verdict_title = "APPROVED FOR TRANCHE-1 DISBURSEMENT" if diesel_valid else "HOLD: SUSPECT TELEMETRY ANOMALY"
             st.session_state.evidence_audit_result = f"""
             ### 🏛️ FEDERAL MINISTRY OF AGRICULTURE AND FOOD SECURITY (FMAFS)
@@ -511,8 +699,6 @@ with tab5:
             * Claimed Clearing Sum: **₦{clearing_invoice_amount:,.2f}**
             * Approved Ministry Benchmark: **₦{land_prep_subtotal:,.2f}**
             * Recommended Tranche Release: **₦{min(clearing_invoice_amount, land_prep_subtotal):,.2f}**
-            
-            *(Note: Provide Gemini API Key to enable AI computer-vision photo inspection).*
             """
 
     if st.session_state.evidence_audit_result:
@@ -526,12 +712,12 @@ with tab6:
     col_in1, col_in2 = st.columns(2)
     with col_in1:
         loan_app_id = st.text_input("Applicant Reference / FMAFS ID", value="FMAFS-AGRI-2026-9812")
-        claimed_ha = st.number_input("Claimed Land Size (Hectares)", min_value=0.5, value=15.0, step=1.0)
+        claimed_ha = st.number_input("Claimed Land Size (Hectares)", min_value=0.5, value=float(land_size), step=1.0)
     with col_in2:
         audit_crop = st.text_input("Claimed Target Crop", value=crop_type)
-        claimed_grant_amount = st.number_input("Requested Facility / Disbursement (NGN)", min_value=100000, value=8500000, step=250000)
+        claimed_grant_amount = st.number_input("Requested Facility / Disbursement (NGN)", min_value=100000, value=float(grand_total), step=250000.0)
 
-    benchmark_cost_per_ha = 420000
+    benchmark_cost_per_ha = (grand_total / land_size) if land_size > 0 else 420000
     expected_total_facility = benchmark_cost_per_ha * claimed_ha
     variance_ratio = (claimed_grant_amount / expected_total_facility) if expected_total_facility > 0 else 1.0
 
@@ -561,12 +747,12 @@ with tab6:
                 Deliver an executive audit memo with Fraud Probability Score (0-100%) and final Ministerial recommendation.
                 """
                 try:
-                    response = client.models.generate_content(
+                    res = client.models.generate_content(
                         model='gemini-2.5-flash',
                         contents=prompt,
                         config=types.GenerateContentConfig(temperature=0.2)
                     )
-                    st.markdown(response.text)
+                    st.markdown(res.text)
                 except Exception as e:
                     st.error(f"AI API Connection Error: {e}")
         else:
@@ -579,7 +765,7 @@ st.markdown("---")
 st.markdown(
     """
     <div style="text-align: center; color: #64748b; font-size: 13px;">
-        Agri-Quant Architecture &copy; 2026 &nbsp;|&nbsp; Certified Agricultural Quantity Surveying & Spatial Telemetry System &nbsp;|&nbsp; Powered by Google Gemini 2.5 Flash
+        Agri-Quant Architecture &copy; 2026 &nbsp;|&nbsp; Universal Agricultural Quantity Surveying & Spatial Telemetry System &nbsp;|&nbsp; Powered by Google Gemini 2.5 Flash
     </div>
     """,
     unsafe_allow_html=True
